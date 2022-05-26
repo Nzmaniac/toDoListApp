@@ -5,27 +5,30 @@ App = {
     load: async () => {
       await App.loadWeb3()
       await App.loadAccount()
-      await App.loadContract()
+      await App.loadContract()      
       await App.render()
     },
   
     // https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
     loadWeb3: async () => {
       if (typeof web3 !== 'undefined') {
-        App.web3Provider = web3.currentProvider
-        web3 = new Web3(web3.currentProvider)
+        App.web3Provider = window.ethereum
+        web3 = new Web3(App.web3Provider)
+        await ethereum.request({method: "eth_requestAccounts"});
       } else {
         window.alert("Please connect to Metamask.")
       }
 
       if (window.ethereum) {
-        window.web3 = new Web3(ethereum)
+         window.web3 = new Web3(ethereum)
         try {
           // Request account access if needed
-          await eth_requestAccounts()
+          await ethereum.request({method: "eth_requestAccounts"})
           // Acccounts now exposed
-          web3.eth.sendAsync({/* ... */})
+          //  web3.eth.sendAsync({/* ... */})
+          await web3.currentProvider.sendAsync({/* ... */})
         } catch (error) {
+          console.log(error)
           // User denied account access...
         }
       }
@@ -46,7 +49,6 @@ App = {
       // Set the current blockchain account
       App.account = web3.eth.accounts[0];
       web3.eth.defaultAccount = web3.eth.accounts[0]
-      console.log(App.account)
     },
   
     loadContract: async () => {
@@ -133,6 +135,12 @@ App = {
         catch (error)
           { console.log(error)}
           window.location.reload()
+    },
+    toggleCompleted: async (e) => {
+      App.setLoading(true)
+      const taskId = e.target.name
+      await App.todoList.completed(taskId)
+      window.location.reload()
     },
 
   }
